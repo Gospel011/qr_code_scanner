@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
           surface: const Color(0xFF121212),
           onSurface: Colors.white,
         ),
-        textTheme: const TextTheme(bodyMedium: TextStyle(fontSize: 24)),
+        textTheme: const TextTheme(bodyMedium: TextStyle(fontSize: 18)),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
             minimumSize: WidgetStatePropertyAll(
