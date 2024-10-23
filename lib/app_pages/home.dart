@@ -165,23 +165,29 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.tertiary,
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: Text(
-                                url!,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      // fontSize: 16,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onTertiary),
-                              )),
-                          const Spacer(),
+                          Expanded(
+                            child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.tertiary,
+                                    borderRadius: BorderRadius.circular(8)),
+                                child: Text(
+                                  url!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        // fontSize: 16,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onTertiary),
+                                )),
+                          ),
+                          
+                          SizedBox(width: 10,),
+                          
                           IconButton(
                               onPressed: () {
                                 Clipboard.setData(ClipboardData(text: url!));
