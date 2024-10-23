@@ -3,7 +3,7 @@ flutter_native_splash:
   ios: true
   web: false
   color: "#FFFFFF"
-  image: "assets/splash/logo-512.png"
+  image: "assets/splash/logo-512-rounded.png"
   android_12:
     color: "#FFFFFF"
-    image: "assets/splash/logo-512.png"
+    image: "assets/splash/logo-512-rounded.png"
