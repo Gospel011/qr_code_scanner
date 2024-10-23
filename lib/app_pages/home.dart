@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qrious/utils/mixins.dart';
+import 'package:qrious/utils/string_extensions.dart';
+import 'package:qrious/widgets/my_mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Home extends StatefulWidget {
@@ -14,7 +17,7 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with WidgetsBindingObserver {
+class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
   late final MobileScannerController controller;
   StreamSubscription<Object>? _subscription;
 
@@ -76,7 +79,17 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
   // ...
 
   bool loadDataImmediately = true;
+
+  BarcodeType? _barcodeType;
+
+  //? BarCode values
   String? url;
+  String? text;
+  Uri? email;
+  String? emailBody;
+  Uri? phone;
+  Uri? sms;
+  String? get smsBody => sms?.queryParameters['body'];
 
   @override
   Widget build(BuildContext context) {
@@ -118,47 +131,27 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
               const SizedBox(
                 height: 16,
               ),
-              Stack(
-                children: [
-                  // QR SCANNER
-                  Container(
-                    width: MediaQuery.sizeOf(context).width - 64,
-                    height: MediaQuery.sizeOf(context).width - 64,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Theme.of(context).colorScheme.tertiary,
-                              blurRadius: 10)
-                        ],
-                        border: Border.all(
-                            color: Theme.of(context).colorScheme.secondary,
-                            width: 2)),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: MobileScanner(
-                        controller: controller,
-                      ),
-                    ),
-                  ),
 
-                  // CAMERA FACING TOGGLE BUTTON
-                  Positioned(
-                      top: 8,
-                      right: 8,
-                      child: IconButton(
-                          onPressed: () => controller.switchCamera(),
-                          icon: const Icon(
-                            Icons.switch_camera_outlined,
-                            size: 32,
-                          )))
-                ],
-              ),
+              //? Mobile Scanner
+              MyMobileScanner(
+                  controller: controller,
+                  onSwitchCameraPressed: () => controller.switchCamera()),
+
+              //?
               const SizedBox(
                 height: 32,
               ),
-              if (url != null && loadDataImmediately == false)
+
+              //?
+              if ((url != null && loadDataImmediately == false) ||
+                  [
+                    BarcodeType.text,
+                    BarcodeType.email,
+                    BarcodeType.phone,
+                    BarcodeType.sms
+                  ].contains(_barcodeType))
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -166,60 +159,98 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Expanded(
-                            child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.tertiary,
-                                    borderRadius: BorderRadius.circular(8)),
-                                child: Text(
-                                  url!,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        // fontSize: 16,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onTertiary),
-                                )),
+                            child: BarcodeDisplayData(
+                              text: displayData,
+                              maxLines:
+                                  _barcodeType == BarcodeType.url ? 1 : null,
+                            ),
                           ),
-                          
-                          SizedBox(width: 10,),
-                          
+                          SizedBox(
+                            width: 10,
+                          ),
                           IconButton(
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(text: url!));
+                                Clipboard.setData(ClipboardData(
+                                    text: isEmail
+                                        ? email!.path
+                                        : isPhone
+                                            ? phone!.path
+                                            : isSms
+                                                ? sms!.path
+                                                : url!));
 
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: const Text(
-                                    "Url copied",
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: const EdgeInsets.only(
-                                      bottom: 16, left: 16, right: 16),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
-                                  duration: const Duration(milliseconds: 1500),
-                                ));
+                                showSnackMessage(context,
+                                    "${_barcodeType!.name.capitalize} copied",
+                                    duration:
+                                        const Duration(milliseconds: 1500));
                               },
                               icon: const Icon(Icons.copy))
                         ],
                       ),
                     ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            launchUrl(Uri.parse(url!));
-                          },
-                          child: const Text("Launch Url")),
+                    if (isUrl)
+                      const SizedBox(
+                        height: 16,
+                      ),
+                    if ((isEmail && emailBody != null) ||
+                        (isSms && sms != null))
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                        ),
+                        child: BarcodeDisplayData(
+                            text: isEmail ? emailBody : smsBody),
+                      ),
+                    if ((isEmail && emailBody != null) ||
+                        (isSms && sms != null))
+                      SizedBox(
+                        height: 16,
+                      ),
+                    if (isEmail || isSms)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 16.0, right: 16, bottom: 16),
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                backgroundColor: WidgetStatePropertyAll(
+                                    Theme.of(context).colorScheme.onTertiary)),
+                            onPressed: () {
+                              if (emailBody == null) return;
+                              Clipboard.setData(ClipboardData(
+                                  text: isEmail ? emailBody! : smsBody!));
+
+                              showSnackMessage(context,
+                                  "${_barcodeType!.name.capitalize} body copied",
+                                  duration: const Duration(milliseconds: 1500));
+                            },
+                            child: Text(
+                              "Copy ${_barcodeType!.name} body",
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.tertiary),
+                            )),
+                      ),
+                    if (isUrl)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: ElevatedButton(
+                            onPressed: () {
+                              launchUrl(isEmail
+                                  ? email!
+                                  : isPhone
+                                      ? phone!
+                                      : Uri.parse(url!));
+                            },
+                            child: Text(isEmail
+                                ? "Open in email app"
+                                : isPhone
+                                    ? "Open phone app"
+                                    : isSms
+                                        ? "Open messaging app"
+                                        : "Launch Url")),
+                      ),
+                    SizedBox(
+                      height: 32,
                     )
                   ],
                 )
@@ -230,37 +261,148 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     );
   }
 
+  bool get isEmail => _barcodeType == BarcodeType.email;
+  bool get isPhone => _barcodeType == BarcodeType.phone;
+  bool get isSms => _barcodeType == BarcodeType.sms;
+
+  bool get isUrl {
+    switch (_barcodeType) {
+      case BarcodeType.url:
+      case BarcodeType.email:
+      case BarcodeType.sms:
+      case BarcodeType.phone:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  String? get displayData {
+    switch (_barcodeType) {
+      case BarcodeType.url:
+        return url;
+      case BarcodeType.text:
+        return text;
+      case BarcodeType.email:
+        print("Email display data: ${email?.path}");
+        return email?.path;
+      case BarcodeType.phone:
+        print("Phone display data: ${phone?.path}");
+        return phone?.path;
+
+      case BarcodeType.sms:
+        print(
+            "Sms display data: ${sms?.path}, ${sms?.queryParameters['body']}");
+        return sms?.path;
+      default:
+    }
+    return null;
+  }
+
   void _handleBarcode(BarcodeCapture event) {
     // final image = event.
     print("N E W   B A R C O D E   E V E N T");
-    final BarcodeType barcodeType = event.barcodes.first.type;
-    print(event.barcodes.first.type);
+    _barcodeType = event.barcodes.first.type;
+    final Barcode code = event.barcodes.first;
+    print(code.type);
 
-    switch (barcodeType) {
+    switch (_barcodeType) {
+      //* For Http Urls
       case BarcodeType.url:
-        setState(() {
-          url = event.barcodes.first.url!.url;
-
-          print('Url in set state is $url');
-
-          print(
-              "Show hidden column: ${url != null && loadDataImmediately == false}");
-        });
+        url = code.url!.url;
         if (loadDataImmediately) _launchUrl(url!);
         break;
+
+      //* For Text
+      case BarcodeType.text:
+        loadDataImmediately = false;
+        text = code.displayValue;
+        break;
+
+      //* For Emails
+      case BarcodeType.email:
+        loadDataImmediately = false;
+
+        emailBody = code.email?.body;
+        email =
+            Uri(scheme: 'mailto', path: code.email?.address, queryParameters: {
+          "subject": code.email?.subject?.replaceAll('+', ' '),
+          "body": code.email?.body?.replaceAll('+', ' ')
+        });
+        if (loadDataImmediately) _launchUrl(email!);
+
+        break;
+
+      //* For Phones
+      case BarcodeType.phone:
+        // loadDataImmediately = false;
+
+        phone = Uri(scheme: 'tel', path: code.phone?.number);
+
+        print("Phone: ${phone?.path}");
+        if (loadDataImmediately) _launchUrl(phone!);
+
+        break;
+
+      //* For SMS
+      case BarcodeType.sms:
+        loadDataImmediately = false;
+
+        sms = Uri(
+          scheme: 'sms',
+          path: code.sms?.phoneNumber,
+          queryParameters: {"body": code.sms?.message},
+        );
+
+        print("SMS path: ${sms?.path}");
+        print("SMS body: ${smsBody}");
+
+        if (loadDataImmediately) _launchUrl(sms!);
+
+        break;
       default:
+        showSnackMessage(context,
+            "We can't parse ${_barcodeType?.name} qr codes at the momemt");
     }
 
-    // url = null;
+    setState(() {});
   }
 
-  Future<void> _launchUrl(String uri) async {
-    if (!await launchUrl(Uri.parse(uri))) {
+  Future<void> _launchUrl(dynamic uri) async {
+    if (!await launchUrl(uri is Uri ? uri : Uri.parse(uri))) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Cannot launch url: $uri"),
         duration: const Duration(milliseconds: 1000),
       ));
     }
+  }
+}
+
+class BarcodeDisplayData extends StatelessWidget {
+  const BarcodeDisplayData({
+    super.key,
+    required this.text,
+    this.maxLines,
+  });
+
+  final String? text;
+  final int? maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.tertiary,
+            borderRadius: BorderRadius.circular(8)),
+        child: Text(
+          text!,
+          maxLines: maxLines,
+          overflow: maxLines == null ? null : TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              // fontSize: 16,
+              color: Theme.of(context).colorScheme.onTertiary),
+        ));
   }
 }
