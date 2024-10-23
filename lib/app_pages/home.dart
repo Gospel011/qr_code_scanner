@@ -362,7 +362,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
         break;
       default:
         showSnackMessage(context,
-            "We can't parse ${_barcodeType?.name} qr codes at the momemt");
+            "We don't support ${_barcodeType?.name} qr codes at the momemt");
     }
 
     setState(() {});
