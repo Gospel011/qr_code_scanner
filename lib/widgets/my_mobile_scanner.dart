@@ -24,11 +24,12 @@ class MyMobileScanner extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                    color: Theme.of(context).colorScheme.tertiary,
-                    blurRadius: 10)
+                    color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5),
+                    // spreadRadius: 3,
+                    blurRadius: 20)
               ],
               border: Border.all(
-                color: Theme.of(context).colorScheme.secondary,
+                color: Theme.of(context).colorScheme.tertiary,
                 width: 2,
               ),
             ),

@@ -5,12 +5,15 @@ import 'package:cross_file/src/types/interface.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qrious/app_pages/create_qr_code_page.dart';
 import 'package:qrious/utils/logger.dart';
 import 'package:qrious/utils/mixins.dart';
 import 'package:qrious/utils/string_extensions.dart';
+import 'package:qrious/utils/widget_extensions.dart';
+import 'package:qrious/widgets/barcode_display_data.dart';
 import 'package:qrious/widgets/my_mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -109,12 +112,12 @@ class _HomeState extends State<Home>
     return Scaffold(
       // backgroundColor: Colors.black,
       floatingActionButton: Visibility(
-        visible: false,
+        visible: true,
         child: FloatingActionButton(
           tooltip: "Create QR code",
           onPressed: () {
             log.i("Implement creating qr codes");
-        
+
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => CreateQrCodePage(),
@@ -129,28 +132,26 @@ class _HomeState extends State<Home>
         child: Center(
           child: Column(
             children: [
-              const SizedBox(
-                height: 64,
+              SizedBox(
+                height: 64.h,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ListTile(
-                  leading: const Text(
-                    "Load data immediately",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  trailing: Switch.adaptive(
-                    value: loadDataImmediately,
-                    onChanged: (value) {
-                      setState(() {
-                        loadDataImmediately = value;
-                      });
-                    },
-                  ),
+              ListTile(
+                leading: Text(
+                  "Load data immediately",
+                  style: TextStyle(fontSize: 16.sp),
                 ),
-              ),
-              const SizedBox(
-                height: 16,
+                trailing: Switch.adaptive(
+                  value: loadDataImmediately,
+                  onChanged: (value) {
+                    setState(() {
+                      loadDataImmediately = value;
+                    });
+                  },
+                ),
+              ).pSymmetric(),
+
+              SizedBox(
+                height: 16.sp,
               ),
 
               //? Mobile Scanner
@@ -159,8 +160,8 @@ class _HomeState extends State<Home>
                   onSwitchCameraPressed: () => controller.switchCamera()),
 
               //?
-              const SizedBox(
-                height: 32,
+               SizedBox(
+                height: 32.h,
               ),
 
               //?
@@ -175,67 +176,59 @@ class _HomeState extends State<Home>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     //? Main Data
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: BarcodeDisplayData(
-                              text: displayData,
-                              maxLines:
-                                  _barcodeType == BarcodeType.url ? 1 : null,
-                            ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: BarcodeDisplayData(
+                            text: displayData,
+                            maxLines:
+                                _barcodeType == BarcodeType.url ? 1 : null,
                           ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          IconButton(
-                              onPressed: () {
-                                Clipboard.setData(ClipboardData(
-                                    text: isEmail
-                                        ? email!.path
-                                        : isPhone
-                                            ? phone!.path
-                                            : isSms
-                                                ? sms!.path
-                                                : url!));
-
-                                showSnackMessage(context,
-                                    "${_barcodeType!.name.capitalize} copied",
-                                    duration:
-                                        const Duration(milliseconds: 1500));
-                              },
-                              icon: const Icon(Icons.copy))
-                        ],
-                      ),
-                    ),
+                        ),
+                        SizedBox(
+                          width: 10.w,
+                        ),
+                        IconButton(
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(
+                                  text: isEmail
+                                      ? email!.path
+                                      : isPhone
+                                          ? phone!.path
+                                          : isSms
+                                              ? sms!.path
+                                              : url!));
+                    
+                              showSnackMessage(context,
+                                  "${_barcodeType!.name.capitalize} copied",
+                                  duration:
+                                      const Duration(milliseconds: 1500));
+                            },
+                            icon: const Icon(Icons.copy))
+                      ],
+                    ).pSymmetric(),
                     if (isUrl)
-                      const SizedBox(
-                        height: 16,
+                       SizedBox(
+                        height: 16.h,
                       ),
 
                     //? Email Or SMS body
                     if ((isEmail && emailBody != null) ||
                         (isSms && sms != null))
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                        ),
-                        child: BarcodeDisplayData(
-                            text: isEmail ? emailBody : smsBody),
-                      ),
+                      BarcodeDisplayData(
+                          text: isEmail ? emailBody : smsBody).pSymmetric(),
                     if ((isEmail && emailBody != null) ||
                         (isSms && sms != null))
                       SizedBox(
-                        height: 16,
+                        height: 16.h,
                       ),
 
                     //? Copy body
                     if (isEmail || isSms)
                       Padding(
-                        padding: const EdgeInsets.only(
-                            left: 16.0, right: 16, bottom: 16),
+                        padding:  EdgeInsets.only(
+                            left: 16.0.w, right: 16.w, bottom: 16.h),
                         child: ElevatedButton(
                             style: ButtonStyle(
                                 backgroundColor: WidgetStatePropertyAll(
@@ -259,50 +252,44 @@ class _HomeState extends State<Home>
 
                     //? Launch Url button
                     if (isUrl)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: ElevatedButton(
-                            onPressed: () {
-                              launchUrl(isEmail
-                                  ? email!
-                                  : isPhone
-                                      ? phone!
-                                      : Uri.parse(url!));
-                            },
-                            child: Text(isEmail
-                                ? "Open in email app"
+                      ElevatedButton(
+                          onPressed: () {
+                            launchUrl(isEmail
+                                ? email!
                                 : isPhone
-                                    ? "Open phone app"
-                                    : isSms
-                                        ? "Open messaging app"
-                                        : "Launch Url")),
-                      ),
+                                    ? phone!
+                                    : Uri.parse(url!));
+                          },
+                          child: Text(isEmail
+                              ? "Open in email app"
+                              : isPhone
+                                  ? "Open phone app"
+                                  : isSms
+                                      ? "Open messaging app"
+                                      : "Launch Url")).pSymmetric(),
                   ],
                 ),
 
               SizedBox(
-                height: 16,
+                height: 16.h,
               ),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll(
-                        Theme.of(context).colorScheme.primaryContainer,
-                      ),
+              ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(
+                      Theme.of(context).colorScheme.primaryContainer,
                     ),
-                    onPressed: analyzeQRCodeFromImageFile,
-                    child: Text(
-                      "Scan from gallery",
-                      style: TextStyle(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w500),
-                    )),
-              ),
+                  ),
+                  onPressed: analyzeQRCodeFromImageFile,
+                  child: Text(
+                    "Scan from gallery",
+                    style: TextStyle(
+                        color:
+                            Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w500),
+                  )).pSymmetric(),
               SizedBox(
-                height: 64,
+                height: 64.h,
               )
             ],
           ),
@@ -450,33 +437,5 @@ class _HomeState extends State<Home>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleBarcode(event);
     });
-  }
-}
-
-class BarcodeDisplayData extends StatelessWidget {
-  const BarcodeDisplayData({
-    super.key,
-    required this.text,
-    this.maxLines,
-  });
-
-  final String? text;
-  final int? maxLines;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.tertiary,
-            borderRadius: BorderRadius.circular(8)),
-        child: Text(
-          text!,
-          maxLines: maxLines,
-          overflow: maxLines == null ? null : TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              // fontSize: 16,
-              color: Theme.of(context).colorScheme.onTertiary),
-        ));
   }
 }

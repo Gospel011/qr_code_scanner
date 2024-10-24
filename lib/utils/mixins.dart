@@ -12,6 +12,7 @@ mixin AppBarMixin {
     Widget? title,
     bool automaticallyImplyLeading = true,
     bool centerTitle = true,
+    List<Widget>? actions,
   }) {
     return AppBar(
       title: title != null ? title : appBarTitle != null ? Text(
@@ -22,6 +23,7 @@ mixin AppBarMixin {
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       automaticallyImplyLeading: automaticallyImplyLeading,
       centerTitle: centerTitle,
+      actions: actions,
     );
   }
 }
