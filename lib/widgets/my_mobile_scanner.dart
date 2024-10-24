@@ -42,8 +42,7 @@ class MyMobileScanner extends StatelessWidget {
             top: 8,
             right: 8,
             child: Tooltip(
-              message:
-                  "Switch to ${controller.facing == CameraFacing.back ? CameraFacing.front.name : CameraFacing.back.name} camera",
+              message: "Switch camera",
               child: IconButton(
                   onPressed: onSwitchCameraPressed,
                   icon: const Icon(
