@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qrious/utils/mixins.dart';
 
 class CreateQrCodePage extends StatefulWidget {
   const CreateQrCodePage({super.key});
@@ -8,10 +9,11 @@ class CreateQrCodePage extends StatefulWidget {
   State<CreateQrCodePage> createState() => _CreateQrCodePageState();
 }
 
-class _CreateQrCodePageState extends State<CreateQrCodePage> {
+class _CreateQrCodePageState extends State<CreateQrCodePage> with AppBarMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: buildAppBar(context, appBarTitle: "Create QR Code"),
       body: Center(
         child: Container(
           decoration: BoxDecoration(color: Colors.white),
@@ -20,10 +22,10 @@ class _CreateQrCodePageState extends State<CreateQrCodePage> {
             version: QrVersions.auto,
             size: 320,
             gapless: false,
-            embeddedImage: AssetImage('assets/app_icon/app_icon.png'),
-            embeddedImageStyle: QrEmbeddedImageStyle(
-              size: Size(40, 40),
-            ),
+            // embeddedImage: AssetImage('assets/app_icon/app_icon.png'),
+            // embeddedImageStyle: QrEmbeddedImageStyle(
+            //   size: Size(40, 40),
+            // ),
           ),
         ),
       ),

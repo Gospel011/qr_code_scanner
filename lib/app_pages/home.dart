@@ -24,7 +24,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home>
-    with WidgetsBindingObserver, UiInfoMixin, ImageMixin {
+    with WidgetsBindingObserver, UiInfoMixin, ImageMixin, AppBarMixin {
   late final MobileScannerController controller;
   StreamSubscription<Object>? _subscription;
 
@@ -108,28 +108,23 @@ class _HomeState extends State<Home>
   Widget build(BuildContext context) {
     return Scaffold(
       // backgroundColor: Colors.black,
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Create QR code",
-        onPressed: () {
-          log.i("Implement creating qr codes");
-
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CreateQrCodePage(),
-            ),
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-      appBar: AppBar(
-        title: Text(
-          'Q R I O U S',
-          style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimaryContainer),
+      floatingActionButton: Visibility(
+        visible: false,
+        child: FloatingActionButton(
+          tooltip: "Create QR code",
+          onPressed: () {
+            log.i("Implement creating qr codes");
+        
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => CreateQrCodePage(),
+              ),
+            );
+          },
+          child: Icon(Icons.add),
         ),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        centerTitle: true,
       ),
+      appBar: buildAppBar(context, appBarTitle: 'Q R I O U S'),
       body: SingleChildScrollView(
         child: Center(
           child: Column(

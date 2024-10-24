@@ -5,6 +5,27 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qrious/utils/logger.dart';
 
+mixin AppBarMixin {
+  PreferredSizeWidget buildAppBar(
+    BuildContext context, {
+    String? appBarTitle,
+    Widget? title,
+    bool automaticallyImplyLeading = true,
+    bool centerTitle = true,
+  }) {
+    return AppBar(
+      title: title != null ? title : appBarTitle != null ? Text(
+        appBarTitle,
+        style:
+            TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+      ) : null,
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      automaticallyImplyLeading: automaticallyImplyLeading,
+      centerTitle: centerTitle,
+    );
+  }
+}
+
 mixin UiInfoMixin {
   showSnackMessage(BuildContext context, String message,
       {Duration duration = const Duration(milliseconds: 1000)}) {
@@ -13,8 +34,10 @@ mixin UiInfoMixin {
         message,
         style: TextStyle(fontSize: 16),
       ),
-      behavior: Platform.isIOS ? null :  SnackBarBehavior.floating,
-      margin: Platform.isIOS ? null :  const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      behavior: Platform.isIOS ? null : SnackBarBehavior.floating,
+      margin: Platform.isIOS
+          ? null
+          : const EdgeInsets.only(bottom: 16, left: 16, right: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       duration: duration,
     ));
