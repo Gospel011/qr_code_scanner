@@ -54,7 +54,7 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: "launcher_icon"
-  adroid: true
+  # adroid: true
   ios: true
   remove_alpha_ios: true
   image_path: "assets/app_icon/qrious-2.png"
