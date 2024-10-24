@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:cross_file/src/types/interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qrious/utils/logger.dart';
 import 'package:qrious/utils/mixins.dart';
 import 'package:qrious/utils/string_extensions.dart';
 import 'package:qrious/widgets/my_mobile_scanner.dart';
@@ -17,7 +20,8 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
+class _HomeState extends State<Home>
+    with WidgetsBindingObserver, UiInfoMixin, ImageMixin {
   late final MobileScannerController controller;
   StreamSubscription<Object>? _subscription;
 
@@ -153,6 +157,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    //? Main Data
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(
@@ -192,6 +197,8 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
                       const SizedBox(
                         height: 16,
                       ),
+
+                    //? Email Or SMS body
                     if ((isEmail && emailBody != null) ||
                         (isSms && sms != null))
                       Padding(
@@ -206,6 +213,8 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
                       SizedBox(
                         height: 16,
                       ),
+
+                    //? Copy body
                     if (isEmail || isSms)
                       Padding(
                         padding: const EdgeInsets.only(
@@ -230,6 +239,8 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
                                       Theme.of(context).colorScheme.tertiary),
                             )),
                       ),
+
+                    //? Launch Url button
                     if (isUrl)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -249,11 +260,33 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
                                         ? "Open messaging app"
                                         : "Launch Url")),
                       ),
-                    SizedBox(
-                      height: 32,
-                    )
                   ],
-                )
+                ),
+
+              SizedBox(
+                height: 16,
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(
+                        Theme.of(context).colorScheme.primaryContainer,
+                      ),
+                    ),
+                    onPressed: analyzeQRCodeFromImageFile,
+                    child: Text(
+                      "Scan from gallery",
+                      style: TextStyle(
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w500),
+                    )),
+              ),
+              SizedBox(
+                height: 32,
+              )
             ],
           ),
         ),
@@ -284,14 +317,14 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
       case BarcodeType.text:
         return text;
       case BarcodeType.email:
-        print("Email display data: ${email?.path}");
+        log.i("Email display data: ${email?.path}");
         return email?.path;
       case BarcodeType.phone:
-        print("Phone display data: ${phone?.path}");
+        log.i("Phone display data: ${phone?.path}");
         return phone?.path;
 
       case BarcodeType.sms:
-        print(
+        log.i(
             "Sms display data: ${sms?.path}, ${sms?.queryParameters['body']}");
         return sms?.path;
       default:
@@ -301,10 +334,10 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
 
   void _handleBarcode(BarcodeCapture event) {
     // final image = event.
-    print("N E W   B A R C O D E   E V E N T");
+    log.i("N E W   B A R C O D E   E V E N T");
     _barcodeType = event.barcodes.first.type;
     final Barcode code = event.barcodes.first;
-    print(code.type);
+    log.i(code.type);
 
     switch (_barcodeType) {
       //* For Http Urls
@@ -339,7 +372,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
 
         phone = Uri(scheme: 'tel', path: code.phone?.number);
 
-        print("Phone: ${phone?.path}");
+        log.i("Phone: ${phone?.path}");
         if (loadDataImmediately) _launchUrl(phone!);
 
         break;
@@ -354,8 +387,8 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
           queryParameters: {"body": code.sms?.message},
         );
 
-        print("SMS path: ${sms?.path}");
-        print("SMS body: ${smsBody}");
+        log.i("SMS path: ${sms?.path}");
+        log.i("SMS body: ${smsBody}");
 
         if (loadDataImmediately) _launchUrl(sms!);
 
@@ -369,6 +402,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
   }
 
   Future<void> _launchUrl(dynamic uri) async {
+    if (uri is! String && uri is! Uri) return;
     if (!await launchUrl(uri is Uri ? uri : Uri.parse(uri))) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -376,6 +410,29 @@ class _HomeState extends State<Home> with WidgetsBindingObserver, UiInfoMixin {
         duration: const Duration(milliseconds: 1000),
       ));
     }
+  }
+
+  void analyzeQRCodeFromImageFile() async {
+    log.i("pick single image");
+
+    final imageFile = await getSingleImageFromSource();
+
+    if (imageFile == null) return;
+
+    CroppedFile? croppedFile = await cropImage(context, imageFile);
+
+    if (croppedFile == null) return;
+
+    log.d("Image File, Cropped File: ${imageFile.path}, ${croppedFile.path}");
+
+    final BarcodeCapture? event =
+        await controller.analyzeImage(croppedFile.path);
+
+    if (event == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleBarcode(event);
+    });
   }
 }
 
