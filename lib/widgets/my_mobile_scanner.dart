@@ -21,14 +21,17 @@ class MyMobileScanner extends StatelessWidget {
             width: MediaQuery.sizeOf(context).width - 64,
             height: MediaQuery.sizeOf(context).width - 64,
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                      color: Theme.of(context).colorScheme.tertiary,
-                      blurRadius: 10)
-                ],
-                border: Border.all(
-                    color: Theme.of(context).colorScheme.secondary, width: 2)),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                    color: Theme.of(context).colorScheme.tertiary,
+                    blurRadius: 10)
+              ],
+              border: Border.all(
+                color: Theme.of(context).colorScheme.secondary,
+                width: 2,
+              ),
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: MobileScanner(

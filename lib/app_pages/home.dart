@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cross_file/src/types/interface.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qrious/app_pages/create_qr_code_page.dart';
 import 'package:qrious/utils/logger.dart';
 import 'package:qrious/utils/mixins.dart';
 import 'package:qrious/utils/string_extensions.dart';
@@ -36,7 +39,13 @@ class _HomeState extends State<Home>
     _subscription = controller.barcodes.listen(_handleBarcode);
 
     // Finally, start the scanner itself.
-    unawaited(controller.start());
+    // startController();
+    startController();
+  }
+
+  void startController() {
+    controller.start(
+        cameraDirection: Platform.isIOS ? CameraFacing.front : null);
   }
 
   @override
@@ -70,7 +79,7 @@ class _HomeState extends State<Home>
         // Don't forget to resume listening to the barcode events.
         _subscription = controller.barcodes.listen(_handleBarcode);
 
-        unawaited(controller.start());
+        startController();
       case AppLifecycleState.inactive:
         // Stop the scanner when the app is paused.
         // Also stop the barcode events subscription.
@@ -103,6 +112,12 @@ class _HomeState extends State<Home>
         tooltip: "Create QR code",
         onPressed: () {
           log.i("Implement creating qr codes");
+
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => CreateQrCodePage(),
+            ),
+          );
         },
         child: Icon(Icons.add),
       ),

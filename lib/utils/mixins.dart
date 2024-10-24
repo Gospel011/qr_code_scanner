@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,8 +13,8 @@ mixin UiInfoMixin {
         message,
         style: TextStyle(fontSize: 16),
       ),
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      behavior: Platform.isIOS ? null :  SnackBarBehavior.floating,
+      margin: Platform.isIOS ? null :  const EdgeInsets.only(bottom: 16, left: 16, right: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       duration: duration,
     ));
