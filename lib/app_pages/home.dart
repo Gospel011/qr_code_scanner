@@ -99,6 +99,13 @@ class _HomeState extends State<Home>
   Widget build(BuildContext context) {
     return Scaffold(
       // backgroundColor: Colors.black,
+      floatingActionButton: FloatingActionButton(
+        tooltip: "Create QR code",
+        onPressed: () {
+          log.i("Implement creating qr codes");
+        },
+        child: Icon(Icons.add),
+      ),
       appBar: AppBar(
         title: Text(
           'Q R I O U S',
@@ -285,7 +292,7 @@ class _HomeState extends State<Home>
                     )),
               ),
               SizedBox(
-                height: 32,
+                height: 64,
               )
             ],
           ),
